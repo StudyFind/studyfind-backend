@@ -1,0 +1,326 @@
+rules_version = "2";
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	function isAuthenticated() {
+      return request.auth != null
+    }
+
+    function isAuthenticatedAs(uid) {
+      return request.auth.uid == uid
+    }
+    
+    function getStudyData(studyID) {
+      return get(/databases/$(database)/documents/studies/$(studyID)).data
+    }
+
+    function getStudyResearcherID(studyID) {
+      return getStudyData(studyID).researcher.id
+    }
+  
+    function readResearcher(researcherID) {
+      return isAuthenticatedAs(researcherID)
+    }
+
+    function createResearcher(researcherID) {
+      return isAuthenticatedAs(researcherID)
+    }
+
+    function updateResearcher(researcherID) {
+      return isAuthenticatedAs(researcherID)
+    }
+
+    function deleteResearcher(researcherID) {
+      return isAuthenticatedAs(researcherID)
+    }
+
+    function readParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+    }
+
+    function createParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+    }
+
+    function updateParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+    }
+
+    function deleteParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+    }
+
+    function readNotification(userID) {
+      return isAuthenticatedAs(userID)
+    }
+
+    function createNotification() {
+      return false // notification is created by cloud function on trigger
+    }
+
+    function updateNotification(userID) {
+      return isAuthenticatedAs(userID)
+    }
+
+    function deleteNotification() {
+      return false // notifications can never be deleted
+    }
+
+    function readStudy() {
+      return true // studies on landing page
+    }
+
+    function createStudy() {
+      return isAuthenticatedAs(request.resource.data.researcher.id)
+    }
+
+    function updateStudy() {
+      return isAuthenticatedAs(resource.data.researcher.id)
+    }
+
+    function deleteStudy() {
+      return isAuthenticatedAs(resource.data.researcher.id)
+    }
+
+    function readStudySurvey() {
+      return isAuthenticated()
+    }
+
+    function createStudySurvey(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function updateStudySurvey(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function deleteStudySurvey(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function readStudyParticipant(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+    }
+
+    function createStudyParticipant(participantID) {
+      return isAuthenticatedAs(participantID)
+    }
+
+    function updateStudyParticipant(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function deleteStudyParticipant(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function readStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function createStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function updateStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function deleteStudyParticipantNote(studyID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID))
+    }
+
+    function readStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+    }
+
+    function createStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+        && isAuthenticatedAs(request.resource.data.user)
+    }
+
+    function updateStudyParticipantMessage(studyID, participantID) {
+      return isAuthenticatedAs(getStudyResearcherID(studyID)) || isAuthenticatedAs(participantID)
+        && !isAuthenticatedAs(resource.data.user)
+    }
+
+    function deleteStudyParticipantMessage() {
+      return false
+    }
+
+    function readReminder() {
+      return isAuthenticatedAs(resource.data.researcherID) || isAuthenticatedAs(resource.data.participantID)
+    }
+
+    function createReminder() {
+      return isAuthenticatedAs(request.resource.data.researcherID)
+        && isAuthenticatedAs(getStudyResearcherID(request.resource.data.studyID))
+        && exists(/databases/$(database)/documents/studies/$(request.resource.data.studyID)/participants/$(request.resource.data.participantID))
+    }
+
+    function updateReminder() {
+      return (
+        isAuthenticatedAs(resource.data.researcherID)
+      ) || (
+        isAuthenticatedAs(resource.data.participantID)
+      )
+    }
+
+    function deleteReminder() {
+      return isAuthenticatedAs(resource.data.researcherID)
+    }
+
+    function readMeeting() {
+      return isAuthenticatedAs(resource.data.researcherID) || isAuthenticatedAs(resource.data.participantID)
+    }
+
+    function createMeeting() {
+      return isAuthenticatedAs(request.resource.data.researcherID)
+        && isAuthenticatedAs(getStudyResearcherID(request.resource.data.studyID))
+        && exists(/databases/$(database)/documents/studies/$(request.resource.data.studyID)/participants/$(request.resource.data.participantID))
+    }
+
+    function updateMeeting() {
+      return (
+        isAuthenticatedAs(resource.data.researcherID)
+      ) || (
+        isAuthenticatedAs(resource.data.participantID)
+      )
+    }
+
+    function deleteMeeting() {
+      return isAuthenticatedAs(resource.data.researcherID)
+    }
+
+    function readFeedback() {
+      return false
+    }
+
+    function createFeedback() {
+      return isAuthenticated()
+    }
+
+    function updateFeedback() {
+      return false
+    }
+
+    function deleteFeedback() {
+      return false
+    }
+    
+    match /teststudies/{testStudyID} {
+    	allow read: if true
+    }
+    
+    match /pricing/{id} {
+      allow read: if true;
+
+      match /prices/{id} {
+        allow read: if true;
+      }
+
+      match /tax_rates/{id} {
+        allow read: if true;
+      }
+    }
+
+  	match /researchers/{researcherID} {
+    	allow read: if readResearcher(researcherID)
+      allow create: if createResearcher(researcherID)
+      allow update: if updateResearcher(researcherID)
+      allow delete: if deleteResearcher(researcherID)
+
+      match /notifications/{notificationID} {
+      	allow read: if readNotification(researcherID)
+        allow create: if createNotification()
+        allow update: if updateNotification(researcherID)
+        allow delete: if deleteNotification()
+      }
+      
+      match /checkout_sessions/{id} {
+        allow read, write: if request.auth.uid == researcherID;
+      }
+      match /subscriptions/{id} {
+        allow read: if request.auth.uid == researcherID;
+      }
+    }
+
+    match /participants/{participantID} {
+    	allow read: if readParticipant(participantID)
+      allow create: if createParticipant(participantID)
+      allow update: if updateParticipant(participantID)
+      allow delete: if deleteParticipant(participantID)
+
+      match /notifications/{notificationID} {
+      	allow read: if readNotification(participantID)
+        allow create: if createNotification()
+        allow update: if updateNotification(participantID)
+        allow delete: if deleteNotification()
+      }
+    }
+
+    match /studies/{studyID} {
+      allow read: if readStudy()
+      allow create: if createStudy()
+      allow update: if updateStudy()
+      allow delete: if deleteStudy()
+
+      match /surveys/{surveyID} {
+        allow read: if readStudySurvey();
+        allow create: if createStudySurvey(studyID);
+        allow update: if updateStudySurvey(studyID);
+        allow delete: if deleteStudySurvey(studyID);
+        
+        match /responses/{responseID} {
+        	allow read: if isAuthenticatedAs(responseID) || isAuthenticatedAs(getStudyResearcherID(studyID))
+          allow write: if isAuthenticatedAs(responseID)
+        }
+      }
+
+      match /participants/{participantID} {
+        allow read: if readStudyParticipant(studyID, participantID);
+        allow create: if createStudyParticipant(participantID);
+        allow update: if updateStudyParticipant(studyID);
+        allow delete: if deleteStudyParticipant(studyID);
+
+        match /notes/{noteID} {
+          allow read: if readStudyParticipantNote(studyID)
+          allow create: if createStudyParticipantNote(studyID)
+          allow update: if updateStudyParticipantNote(studyID)
+          allow delete: if deleteStudyParticipantNote(studyID)
+        }
+
+        match /messages/{messageID} {
+          allow read: if readStudyParticipantMessage(studyID, participantID);
+          allow create: if createStudyParticipantMessage(studyID, participantID);
+          allow update: if updateStudyParticipantMessage(studyID, participantID);
+          allow delete: if deleteStudyParticipantMessage();
+        }
+    	}
+    }
+
+    match /reminders/{reminderID} {
+    	allow read: if readReminder();
+    	allow create: if createReminder();
+    	allow update: if updateReminder();
+    	allow delete: if deleteReminder();
+    }
+
+    match /meetings/{meetingID} {
+    	allow read: if readMeeting();
+    	allow create: if createMeeting();
+    	allow update: if updateMeeting();
+    	allow delete: if deleteMeeting();
+    }
+
+    match /feedback/{feedbackID} {
+      allow read: if readFeedback();
+    	allow create: if createFeedback();
+    	allow update: if updateFeedback();
+    	allow delete: if deleteFeedback();
+    }
+    
+    match /mailing/{mailingID} {
+    	allow create: if true;
+    }
+  }
+}
