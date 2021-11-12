@@ -11,16 +11,18 @@ export const sendNotificationEmail = async (
   }
 ) => {
   const settingLink = {
-    RESEARCHER: "",
-    PARTICIPANT: "",
+    RESEARCHER: "https://researcher.studyfind.org/account/notifications",
+    PARTICIPANT: "https://studyfind.org/account/notifications",
   }[type];
 
   const subject = notificationDetails.title;
   const body = `
-    ${notificationDetails.body}
-
-    Click <a href="${notificationDetails.link}">here</a> to view updates
-    Click <a href="${settingLink}">here</a> to update notification settings
+    <h3>${notificationDetails.title}</h3>
+    <p>${notificationDetails.body}</p>
+    <div>
+      Click <a href="${notificationDetails.link}">here</a> to view updates
+      Click <a href="${settingLink}">here</a> to update notification settings
+    </div>
   `;
 
   return sendEmail(email, subject, body);

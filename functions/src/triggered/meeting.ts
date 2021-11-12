@@ -5,16 +5,14 @@ import { NotificationMeta, NotificationData } from "../types";
 
 const meeting = functions.firestore.document("meetings/{meetingID}");
 
-export const onCreateMeeting = meeting.onCreate(async (snapshot, context) => {
+export const onCreateMeeting = meeting.onCreate(async (snapshot) => {
   // 1. Set participant local notification that researcher has created a meeting
   // 1. Set participant email notification that researcher has created a meeting
 
   const meeting = snapshot.data();
 
-  const participantID = context.params.participantID;
-
   const meta: NotificationMeta = {
-    uid: participantID,
+    uid: meeting.participantID,
     type: "PARTICIPANT",
   };
 
@@ -28,7 +26,7 @@ export const onCreateMeeting = meeting.onCreate(async (snapshot, context) => {
   return sendNotification(meta, data);
 });
 
-export const onUpdateMeeting = meeting.onUpdate(async (change, context) => {
+export const onUpdateMeeting = meeting.onUpdate(async (change) => {
   // If researcher changes meeting details, send participant update notification
   // If participant confirms meeting, send researcher update notification
 
@@ -36,7 +34,6 @@ export const onUpdateMeeting = meeting.onUpdate(async (change, context) => {
   const after = change.after.data();
 
   // PARTICIPANT
-  const participantID = context.params.participantID;
 
   const hasNameChanged = before.name !== after.name;
   const hasLinkChanged = before.link !== after.link;
@@ -46,7 +43,7 @@ export const onUpdateMeeting = meeting.onUpdate(async (change, context) => {
     const meeting = after;
 
     const meta: NotificationMeta = {
-      uid: participantID,
+      uid: meeting.participantID,
       type: "PARTICIPANT",
     };
 
@@ -62,20 +59,19 @@ export const onUpdateMeeting = meeting.onUpdate(async (change, context) => {
 
   // RESEARCHER
 
-  const hasParticipantConfirmed =
-    !before.confirmedByParticipant && after.confirmedByParticipant;
+  const hasParticipantConfirmed = !before.confirmedByParticipant && after.confirmedByParticipant;
 
   if (hasParticipantConfirmed) {
     const meeting = after;
 
     const meta: NotificationMeta = {
-      uid: "RESEARCHER",
-      type: meeting.researcherID,
+      uid: meeting.researcherID,
+      type: "RESEARCHER",
     };
 
     const data: NotificationData = {
       code: "PARTICIPANT_CONFIRMED_MEETING",
-      title: "Meeting Updated",
+      title: "Meeting Confirmed",
       body: `The participant ${meeting.participantID} has confirmed your meeting titled "${meeting.name}"`,
       link: `https://researcher.studyfind.org/study/${meeting.studyID}/participants/${meeting.participantID}/meetings`,
     };
@@ -86,14 +82,12 @@ export const onUpdateMeeting = meeting.onUpdate(async (change, context) => {
   return Promise.resolve();
 });
 
-export const onDeleteMeeting = meeting.onDelete(async (snapshot, context) => {
+export const onDeleteMeeting = meeting.onDelete(async (snapshot) => {
   const meeting = snapshot.data();
-
-  const participantID = context.params.participantID;
 
   const meta: NotificationMeta = {
     uid: "PARTICIPANT",
-    type: participantID,
+    type: meeting.participantID,
   };
 
   const data: NotificationData = {

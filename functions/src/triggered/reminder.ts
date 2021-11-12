@@ -5,13 +5,13 @@ import { NotificationMeta, NotificationData } from "../types";
 
 const reminder = functions.firestore.document("reminders/{reminderID}");
 
-export const onCreateReminder = reminder.onCreate(async (snapshot, context) => {
+export const onCreateReminder = reminder.onCreate(async (snapshot) => {
   // 1. Set participant local notification that researcher has created a reminder
   // 1. Set participant email notification that researcher has created a reminder
 
   const reminder = snapshot.data();
 
-  const participantID = context.params.participantID;
+  const participantID = reminder.participantID;
 
   const meta: NotificationMeta = {
     uid: participantID,
@@ -28,14 +28,12 @@ export const onCreateReminder = reminder.onCreate(async (snapshot, context) => {
   return sendNotification(meta, data);
 });
 
-export const onUpdateReminder = reminder.onUpdate(async (change, context) => {
+export const onUpdateReminder = reminder.onUpdate(async (change) => {
   // If researcher changes reminder details, send participant update notification
   // If participant confirms reminder, send researcher update notification
 
   const before = change.before.data();
   const after = change.after.data();
-
-  const participantID = context.params.participantID;
 
   const checkArrayEquality = (arr1: number[], arr2: number[]) => {
     if (arr1.length !== arr2.length) {
@@ -58,16 +56,11 @@ export const onUpdateReminder = reminder.onUpdate(async (change, context) => {
   const hasEndDateChanged = before.endDate !== after.endDate;
   const hasTimesChanged = !checkArrayEquality(before.times, after.times);
 
-  if (
-    hasTitleChanged ||
-    hasStartDateChanged ||
-    hasEndDateChanged ||
-    hasTimesChanged
-  ) {
+  if (hasTitleChanged || hasStartDateChanged || hasEndDateChanged || hasTimesChanged) {
     const reminder = after;
 
     const meta: NotificationMeta = {
-      uid: participantID,
+      uid: reminder.participantID,
       type: "PARTICIPANT",
     };
 
@@ -81,8 +74,7 @@ export const onUpdateReminder = reminder.onUpdate(async (change, context) => {
     return sendNotification(meta, data);
   }
 
-  const hasParticipantConfirmed =
-    !before.confirmedByParticipant && after.confirmedByParticipant;
+  const hasParticipantConfirmed = !before.confirmedByParticipant && after.confirmedByParticipant;
 
   if (hasParticipantConfirmed) {
     const reminder = after;
@@ -94,7 +86,7 @@ export const onUpdateReminder = reminder.onUpdate(async (change, context) => {
 
     const data: NotificationData = {
       code: "PARTICIPANT_CONFIRMED_REMINDER",
-      title: "Reminder Updated",
+      title: "Reminder Confirmed",
       link: `https://researcher.studyfind.org/study/${reminder.studyID}/participants/${reminder.participantID}/reminders`,
       body: `Participant ${reminder.participantID} has confirmed your reminder titled "${reminder.title}"`,
     };
@@ -105,12 +97,11 @@ export const onUpdateReminder = reminder.onUpdate(async (change, context) => {
   return Promise.resolve();
 });
 
-export const onDeleteReminder = reminder.onDelete(async (snapshot, context) => {
+export const onDeleteReminder = reminder.onDelete(async (snapshot) => {
   const reminder = snapshot.data();
-  const participantID = context.params.participantID;
 
   const meta: NotificationMeta = {
-    uid: participantID,
+    uid: reminder.participantID,
     type: "PARTICIPANT",
   };
 
