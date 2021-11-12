@@ -20,8 +20,8 @@ export const sendNotificationEmail = async (
     <h3>${notificationDetails.title}</h3>
     <p>${notificationDetails.body}</p>
     <div>
-      Click <a href="${notificationDetails.link}">here</a> to view updates
-      Click <a href="${settingLink}">here</a> to update notification settings
+      <p>Click <a href="${notificationDetails.link}">here</a> to view updates</p>
+      <p>Click <a href="${settingLink}">here</a> to update notification settings</p>
     </div>
   `;
 

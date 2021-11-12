@@ -9,7 +9,7 @@ import { NotificationMeta, NotificationData } from "../types";
 const studyParticipant = functions.firestore.document("studies/{studyID}/participant/{participantID}");
 
 export const onCreateStudyParticipant = studyParticipant.onCreate(async (snapshot, context) => {
-  const participantID = snapshot.id;
+  const participantID = context.params.participantID;
   const studyID = context.params.studyID;
 
   const study = await getDocument(firestore.collection("studies").doc(studyID));
