@@ -3,7 +3,9 @@ import * as functions from "firebase-functions";
 import { sendNotification } from "./__utils__/send-notification";
 import { NotificationMeta, NotificationData } from "../types";
 
-const reminder = functions.firestore.document("reminders/{reminderID}");
+const reminder = functions.firestore.document(
+  "studies/{studyID}/participants/{participantID}/reminders/{reminderID}"
+);
 
 export const onCreateReminder = reminder.onCreate(async (snapshot) => {
   // 1. Set participant local notification that researcher has created a reminder

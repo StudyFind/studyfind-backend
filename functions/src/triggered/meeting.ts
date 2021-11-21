@@ -3,7 +3,9 @@ import * as functions from "firebase-functions";
 import { sendNotification } from "./__utils__/send-notification";
 import { NotificationMeta, NotificationData } from "../types";
 
-const meeting = functions.firestore.document("meetings/{meetingID}");
+const meeting = functions.firestore.document(
+  "studies/{studyID}/participants/{participantID}/meetings/{meetingID}"
+);
 
 export const onCreateMeeting = meeting.onCreate(async (snapshot) => {
   // 1. Set participant local notification that researcher has created a meeting
