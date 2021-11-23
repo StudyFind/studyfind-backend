@@ -9,10 +9,7 @@ const MILLIS_IN_30_MINS = 1800000;
 const getCurrentTimeRoundedTo30Minutes = () => {
   const MILLIS_AT_UTC_NOW = moment().utc().valueOf();
 
-  return (
-    MILLIS_IN_30_MINS +
-    Math.floor(MILLIS_AT_UTC_NOW / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS
-  );
+  return Math.floor(MILLIS_AT_UTC_NOW / MILLIS_IN_30_MINS) * MILLIS_IN_30_MINS;
 };
 
 const add30Minutes = (time: number) => {
@@ -23,10 +20,7 @@ const add30Minutes = (time: number) => {
 export const meetingsRunner = async () => {
   const roundedTime = add30Minutes(getCurrentTimeRoundedTo30Minutes());
 
-  const meetingsRef = await firestore
-    .collection("meetings")
-    .where("time", "==", roundedTime)
-    .get();
+  const meetingsRef = await firestore.collection("meetings").where("time", "==", roundedTime).get();
 
   const promises: Promise<any>[] = [];
 
@@ -60,14 +54,8 @@ export const meetingsRunner = async () => {
 
     promises.push(
       Promise.allSettled([
-        sendNotification(
-          researcherNotificationMeta,
-          researcherNotificationData
-        ),
-        sendNotification(
-          participantNotificationMeta,
-          participantNotificationData
-        ),
+        sendNotification(researcherNotificationMeta, researcherNotificationData),
+        sendNotification(participantNotificationMeta, participantNotificationData),
       ])
     );
   });
