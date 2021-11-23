@@ -12,12 +12,9 @@ export const sendNotificationLocal = async (
   const notification = {
     ...notificationDetails,
     read: false,
-    time: now,
+    createdAt: now,
+    updatedAt: now,
   };
 
-  return firestore
-    .collection(collection)
-    .doc(uid)
-    .collection("notifications")
-    .add(notification);
+  return firestore.collection(collection).doc(uid).collection("notifications").add(notification);
 };
