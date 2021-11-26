@@ -37,7 +37,7 @@ export const onCreateStudyParticipant = studyParticipant.onCreate(async (snapsho
       });
   };
 
-  return Promise.all([
+  return Promise.allSettled([
     sendNotification(meta, data),
     appendStudyIDToParticipantEnrolled(participantID, studyID),
   ]);
@@ -69,4 +69,39 @@ export const onUpdateStudyParticipant = studyParticipant.onUpdate(async (change,
   }
 
   return Promise.resolve();
+});
+
+export const onDeleteStudyParticipant = studyParticipant.onDelete(async (snapshot, context) => {
+  const participantID = context.params.participantID;
+  const studyID = context.params.studyID;
+
+  const study = await getDocument(firestore.collection("studies").doc(studyID));
+
+  const researcherID = study?.researcher.id;
+
+  const meta: NotificationMeta = {
+    uid: researcherID,
+    type: "RESEARCHER",
+  };
+
+  const data: NotificationData = {
+    code: "PARTICIPANT_LEFT",
+    title: "Participant Left Study",
+    body: `Participant ${participantID} has left your study`,
+    link: `https://researcher.studyfind.org/study/${studyID}/participants`,
+  };
+
+  const removeStudyIDFromParticipantEnrolled = async (participantID: string, studyID: string) => {
+    firestore
+      .collection("participants")
+      .doc(participantID)
+      .update({
+        enrolled: admin.firestore.FieldValue.arrayRemove(studyID),
+      });
+  };
+
+  return Promise.allSettled([
+    sendNotification(meta, data),
+    removeStudyIDFromParticipantEnrolled(participantID, studyID),
+  ]);
 });
